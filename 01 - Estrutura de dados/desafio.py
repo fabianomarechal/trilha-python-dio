@@ -1,5 +1,49 @@
 import textwrap
 
+class Conta:
+
+    def __init__(self, saldo=0, valor_limite=500, numero_saques=0, limite_saques=3):
+        self.saldo = saldo
+        self.extrato = ""
+        self.valor_limite = valor_limite
+        self.numero_saques = numero_saques
+        self.limite_saques = limite_saques
+    
+    def depositar(self, valor):
+        if valor <= 0:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return
+        self.saldo += valor
+        self.extrato += f"Depósito:\tR$ {valor:.2f}\n"
+        print("\n=== Depósito realizado com sucesso! ===")
+
+    def sacar(self, valor):
+        if valor <= 0:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return
+        if valor > self.saldo:
+            print("\n@@@ Operação falhou! Você não tem saldo suficiente. @@@")
+            return
+        if valor > self.valor_limite:
+            print("\n@@@ Operação falhou! O valor do saque excede o limite. @@@")
+            return
+        if self.numero_saques >= self.limite_saques:
+            print("\n@@@ Operação falhou! Número máximo de saques excedido. @@@")
+            return
+        self.saldo -= valor
+        self.extrato += f"Saque:\t\tR$ {valor:.2f}\n"
+        self.numero_saques += 1
+        print("\n=== Saque realizado com sucesso! ===")
+    
+    def exibir_extrato(self):
+        print("\n================ EXTRATO ================")
+        print("Não foram realizadas movimentações." if not self.extrato else self.extrato)
+        print(f"\nSaldo:\t\tR$ {self.saldo:.2f}")
+        print("==========================================")
+
+    
+        
+
 
 def menu():
     menu = """\n
@@ -14,49 +58,6 @@ def menu():
     => """
     return input(textwrap.dedent(menu))
 
-
-def depositar(saldo, valor, extrato, /):
-    if valor > 0:
-        saldo += valor
-        extrato += f"Depósito:\tR$ {valor:.2f}\n"
-        print("\n=== Depósito realizado com sucesso! ===")
-    else:
-        print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
-
-    return saldo, extrato
-
-
-def sacar(*, saldo, valor, extrato, limite, numero_saques, limite_saques):
-    excedeu_saldo = valor > saldo
-    excedeu_limite = valor > limite
-    excedeu_saques = numero_saques >= limite_saques
-
-    if excedeu_saldo:
-        print("\n@@@ Operação falhou! Você não tem saldo suficiente. @@@")
-
-    elif excedeu_limite:
-        print("\n@@@ Operação falhou! O valor do saque excede o limite. @@@")
-
-    elif excedeu_saques:
-        print("\n@@@ Operação falhou! Número máximo de saques excedido. @@@")
-
-    elif valor > 0:
-        saldo -= valor
-        extrato += f"Saque:\t\tR$ {valor:.2f}\n"
-        numero_saques += 1
-        print("\n=== Saque realizado com sucesso! ===")
-
-    else:
-        print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
-
-    return saldo, extrato
-
-
-def exibir_extrato(saldo, /, *, extrato):
-    print("\n================ EXTRATO ================")
-    print("Não foram realizadas movimentações." if not extrato else extrato)
-    print(f"\nSaldo:\t\tR$ {saldo:.2f}")
-    print("==========================================")
 
 
 def criar_usuario(usuarios):
@@ -104,38 +105,26 @@ def listar_contas(contas):
 
 
 def main():
-    LIMITE_SAQUES = 3
     AGENCIA = "0001"
 
-    saldo = 0
-    limite = 500
-    extrato = ""
-    numero_saques = 0
     usuarios = []
     contas = []
+
+    conta = Conta()
 
     while True:
         opcao = menu()
 
         if opcao == "d":
             valor = float(input("Informe o valor do depósito: "))
-
-            saldo, extrato = depositar(saldo, valor, extrato)
+            conta.depositar(valor)
 
         elif opcao == "s":
             valor = float(input("Informe o valor do saque: "))
-
-            saldo, extrato = sacar(
-                saldo=saldo,
-                valor=valor,
-                extrato=extrato,
-                limite=limite,
-                numero_saques=numero_saques,
-                limite_saques=LIMITE_SAQUES,
-            )
+            conta.sacar(valor)
 
         elif opcao == "e":
-            exibir_extrato(saldo, extrato=extrato)
+            conta.exibir_extrato()
 
         elif opcao == "nu":
             criar_usuario(usuarios)
